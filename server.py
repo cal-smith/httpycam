@@ -5,12 +5,23 @@ import configparser
 
 config = configparser.ConfigParser(allow_no_value=True)
 config.read("config.ini")
-camera_ids = [id for id, _ in config.items("cameras")]
+
 
 async def root(_request):
     """
     ~= index.html
     """
+
+    def get_camera_html(id):
+        return f"""
+            <p>
+                <code>{id}</code>
+                (<a href="/{id}/frame">frame</a> | <a href="/{id}/stream">stream</a>)
+            </p>
+            <img src="/{id}/frame" style="max-width: 500px;"/>
+        """
+
+    camera_ids = [id for id, _ in config.items("cameras")]
     response = web.Response(headers={"Content-Type": "text/html"})
     response.body = f"""
         <!DOCTYPE html>
@@ -19,7 +30,7 @@ async def root(_request):
         <head>
         </head>
         <body>
-            {"".join([f'<img src="/{id}/frame"/>' for id in camera_ids])}
+            {"".join([get_camera_html(id) for id in camera_ids])}
         </body>
         </html>
     """
