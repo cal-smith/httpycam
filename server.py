@@ -1,25 +1,8 @@
 from aiohttp import web, MultipartWriter
 import asyncio
 import webcam
-import configparser
-import os
-import shutil
+from config import get_config
 
-config = configparser.ConfigParser(allow_no_value=True)
-# borrowing from https://stackoverflow.com/a/53222876
-configpath = os.path.join(
-    os.environ.get('APPDATA') or
-    os.environ.get('XDG_CONFIG_HOME') or
-    os.path.join(os.environ['HOME'], '.config'),
-    "httpycam"
-)
-os.makedirs(configpath, exist_ok=True)
-config.read(os.path.join(configpath, "config.ini"))
-
-# no config yet, write a default one
-if len(config.sections()) == 0:
-    shutil.copy("config.ini", configpath)
-    config.read(os.path.join(configpath, "config.ini"))
 
 async def root(_request):
     """
@@ -35,6 +18,7 @@ async def root(_request):
             <img src="/{id}/frame" style="max-width: 500px;"/>
         """
 
+    config = get_config()
     camera_ids = [id for id, _ in config.items("cameras")]
     response = web.Response(headers={"Content-Type": "text/html"})
     response.body = f"""

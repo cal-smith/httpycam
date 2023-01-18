@@ -1,15 +1,12 @@
 import imageio.v3 as iio
 import asyncio
-import configparser
 from collections import defaultdict
 from PIL import Image, ImageDraw, ImageFont
 from io import BytesIO
+from config import get_config
 
 current_frame = defaultdict(lambda: None)
 current_frame_requests = defaultdict(int)
-
-config = configparser.ConfigParser(allow_no_value=True)
-config.read("config.ini")
 
 
 def get_empty_frame(content: str) -> bytes:
@@ -45,6 +42,7 @@ async def get_all_frames_forever():
     """
     Set up background workers for all configured cameras
     """
+    config = get_config()
     camera_ids = [id for id, _ in config.items("cameras")]
     for id in camera_ids:
         # create a task to run "in the background"
@@ -80,6 +78,7 @@ async def get_frames(video_device):
     """
     Infinite generator that returns the current image produced by get_frames_forever
     """
+    config = get_config()
     if not config.has_option("cameras", video_device):
         print(f"Video device {video_device} not configured")
         yield get_empty_frame(f"Video device {video_device} not configured")
@@ -97,6 +96,7 @@ async def get_frame(video_device):
     """
     Returns a single frame from the webcam stream
     """
+    config = get_config()
     if not config.has_option("cameras", video_device):
         print(f"Video device {video_device} not configured")
         return get_empty_frame(f"Video device {video_device} not configured")
